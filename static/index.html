@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Instrumotion</title>
+        <link rel="icon" type="image/x-icon" href="/favicon_io/favicon.ico">
+        <link rel="manifest" href="/manifest.json">
+        <meta name="theme-color" content="#000000">
+    </head>
+<body>
+    <h1>Instrumotion</h1>
+    <p>If you can see this text, the HTML is loading correctly.</p>
+    <video id="video" width="640" height="480" autoplay playsinline></video>
+    <canvas id="canvas" width="640" height="480" style="display:none;"></canvas>
+    <div id="gesture"></div>
+    <div id="error" style="color: red;"></div>
+
+    <script>
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const gestureDiv = document.getElementById('gesture');
+        const errorDiv = document.getElementById('error');
+        
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                video.srcObject = stream;
+                video.onloadedmetadata = () => {
+                    video.play();
+                };
+            })
+            .catch(err => {
+                console.error("Error accessing the camera", err);
+                errorDiv.textContent = "Camera error: " + err.message;
+            });
+
+        const ws = new WebSocket('ws://' + window.location.hostname + ':8080/ws');
+
+        ws.onopen = () => {
+            console.log("WebSocket connected");
+            errorDiv.textContent += " WebSocket connected.";
+        };
+
+        ws.onerror = (error) => {
+            console.error("WebSocket error", error);
+            errorDiv.textContent += " WebSocket error: " + error;
+        };
+
+        ws.onmessage = function(event) {
+            gestureDiv.textContent = event.data;
+        };
+
+        function sendFrame() {
+            if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                const imageData = canvas.toDataURL('image/jpeg');
+                ws.send(imageData);
+            }
+        }
+
+        setInterval(sendFrame, 100);  // Send a frame every 100ms
+    </script>
+</body>
+</html>

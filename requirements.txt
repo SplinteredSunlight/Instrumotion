@@ -1,0 +1,21 @@
+# Web framework
+fastapi==0.95.1
+uvicorn==0.22.0
+
+# Image processing
+opencv-python==4.7.0.72
+
+# Numerical computing
+numpy==1.24.3
+
+# Hand tracking and gesture recognition
+mediapipe==0.10.0
+
+# WebSocket support
+websockets==11.0.3
+
+# Logging (usually part of Python's standard library, but listing it for clarity)
+logging
+
+# Config management
+python-dotenv==1.0.0
